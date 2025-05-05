@@ -25,12 +25,13 @@ func Use(args []string) {
 		}
 	}
 
-	// get users home dir
-	homeDir, err := os.UserHomeDir()
-
+	// get home dir
+	exPath, err := os.Executable()
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	homeDir := filepath.Dir(exPath)
 
 	// check if .pvm folder exists
 	if _, err := os.Stat(filepath.Join(homeDir, ".pvm")); os.IsNotExist(err) {
@@ -45,7 +46,7 @@ func Use(args []string) {
 	}
 
 	// check if .pvm/bin folder exists
-	binPath := filepath.Join(homeDir, ".pvm", "bin")
+	binPath := homeDir
 	if _, err := os.Stat(binPath); os.IsNotExist(err) {
 		os.Mkdir(binPath, 0755)
 	}
@@ -84,121 +85,11 @@ func Use(args []string) {
 		theme.Warning(fmt.Sprintf("No patch version specified, assumed newest patch version %s.", selectedVersion.number.String()))
 	}
 
-	// remove old php bat script
-	batPath := filepath.Join(binPath, "php.bat")
-	if _, err := os.Stat(batPath); err == nil {
-		os.Remove(batPath)
-	}
-
-	// remove the old php sh script
-	shPath := filepath.Join(binPath, "php")
-	if _, err := os.Stat(shPath); err == nil {
-		os.Remove(shPath)
-	}
-
-	// remove old php-cgi bat script
-	batPathCGI := filepath.Join(binPath, "php-cgi.bat")
-	if _, err := os.Stat(batPathCGI); err == nil {
-		os.Remove(batPathCGI)
-	}
-
-	// remove old php-cgi sh script
-	shPathCGI := filepath.Join(binPath, "php-cgi")
-	if _, err := os.Stat(shPathCGI); err == nil {
-		os.Remove(shPathCGI)
-	}
-
-	// remove old composer bat script
-	batPathComposer := filepath.Join(binPath, "composer.bat")
-	if _, err := os.Stat(batPathComposer); err == nil {
-		os.Remove(batPathComposer)
-	}
-
-	// remove the old composer sh script
-	shPathComposer := filepath.Join(binPath, "composer")
-	if _, err := os.Stat(shPathComposer); err == nil {
-		os.Remove(shPathComposer)
-	}
-
 	versionFolderPath := filepath.Join(homeDir, ".pvm", "versions", selectedVersion.folder.Name())
-	versionPath := filepath.Join(versionFolderPath, "php.exe")
-	versionPathCGI := filepath.Join(versionFolderPath, "php-cgi.exe")
-	composerPath := filepath.Join(versionFolderPath, "composer", "composer.phar")
-
-	// create bat script for php
-	batCommand := "@echo off \n"
-	batCommand = batCommand + "set filepath=\"" + versionPath + "\"\n"
-	batCommand = batCommand + "set arguments=%*\n"
-	batCommand = batCommand + "%filepath% %arguments%\n"
-
-	err = os.WriteFile(batPath, []byte(batCommand), 0755)
-
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	// create sh script for php
-	shCommand := "#!/bin/bash\n"
-	shCommand = shCommand + "filepath=\"" + versionPath + "\"\n"
-	shCommand = shCommand + "\"$filepath\" \"$@\""
-
-	err = os.WriteFile(shPath, []byte(shCommand), 0755)
-
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	// create bat script for php-cgi
-	batCommandCGI := "@echo off \n"
-	batCommandCGI = batCommandCGI + "set filepath=\"" + versionPathCGI + "\"\n"
-	batCommandCGI = batCommandCGI + "set arguments=%*\n"
-	batCommandCGI = batCommandCGI + "%filepath% %arguments%\n"
-
-	err = os.WriteFile(batPathCGI, []byte(batCommandCGI), 0755)
-
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	// create sh script for php-cgi
-	shCommandCGI := "#!/bin/bash\n"
-	shCommandCGI = shCommandCGI + "filepath=\"" + versionPathCGI + "\"\n"
-	shCommandCGI = shCommandCGI + "\"$filepath\" \"$@\""
-
-	err = os.WriteFile(shPathCGI, []byte(shCommandCGI), 0755)
-
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	// create bat script for composer
-	batCommandComposer := "@echo off \n"
-	batCommandComposer = batCommandComposer + "set filepath=\"" + versionPath + "\"\n"
-	batCommandComposer = batCommandComposer + "set composerpath=\"" + composerPath + "\"\n"
-	batCommandComposer = batCommandComposer + "set arguments=%*\n"
-	batCommandComposer = batCommandComposer + "%filepath% %composerpath% %arguments%\n"
-
-	err = os.WriteFile(batPathComposer, []byte(batCommandComposer), 0755)
-
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	// create sh script for php
-	shCommandComposer := "#!/bin/bash\n"
-	shCommandComposer = shCommandComposer + "filepath=\"" + versionPath + "\"\n"
-	shCommandComposer = shCommandComposer + "composerpath=\"" + composerPath + "\"\n"
-	shCommandComposer = shCommandComposer + "\"$filepath\" \"$composerpath\" \"$@\""
-
-	err = os.WriteFile(shPathComposer, []byte(shCommandComposer), 0755)
-
-	if err != nil {
-		log.Fatalln(err)
-	}
-
+	
 	// create directory link to ext directory
-	extensionDirPath := filepath.Join(versionFolderPath, "ext")
-	extensionLinkPath := filepath.Join(binPath, "ext")
+	extensionDirPath := versionFolderPath
+	extensionLinkPath := filepath.Join(binPath, "current")
 
 	// delete the old link first if it exists
 	if _, err := os.Stat(extensionLinkPath); err == nil {

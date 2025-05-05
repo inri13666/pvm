@@ -205,13 +205,14 @@ func RetrievePHPVersions() ([]Version, error) {
 
 func RetrieveInstalledPHPVersions() ([]Version, error) {
 	versions := make([]Version, 0)
-	// get users home dir
-	homeDir, err := os.UserHomeDir()
 
+	// get home dir
+	exPath, err := os.Executable()
 	if err != nil {
 		log.Fatalln(err)
-		return versions, err
 	}
+
+	homeDir := filepath.Dir(exPath)
 
 	// check if .pvm folder exists
 	pvmPath := filepath.Join(homeDir, ".pvm")

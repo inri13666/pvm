@@ -78,11 +78,13 @@ func Install(args []string) {
 
 	fmt.Printf("Installing PHP %s\n", desiredVersion)
 
-	homeDir, err := os.UserHomeDir()
-
+	// get home dir
+	exPath, err := os.Executable()
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	homeDir := filepath.Dir(exPath)
 
 	// check if .pvm folder exists
 	pvmPath := filepath.Join(homeDir, ".pvm")

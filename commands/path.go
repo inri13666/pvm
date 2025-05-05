@@ -12,11 +12,12 @@ func Path() {
 	theme.Title("pvm: PHP Version Manager")
 
 	// get home dir
-	homeDir, err := os.UserHomeDir()
+	exPath, err := os.Executable()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
+	homeDir := filepath.Dir(exPath)
 	fmt.Println("Add the following directory to your PATH:")
 	fmt.Println("    " + filepath.Join(homeDir, ".pvm", "bin"))
 }
